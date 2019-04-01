@@ -17,18 +17,14 @@ type SiestaPage struct {
 	conf yaml.Yaml
 }
 
-func joinPath(confURL string, targetURL string) string {
+func (s SiestaPage) Open(task yaml.Task) error {
+	url := task.Target
 	// check base url & join if target means path
-	if len(confURL) > 0 && len(targetURL) > 0 {
-		if string([]rune(targetURL)[0]) == "/" {
-			targetURL = path.Join(confURL, targetURL)
+	if len(s.conf.URL) > 0 && len(url) > 0 {
+		if string([]rune(url)[0]) == "/" {
+			url = path.Join(s.conf.URL, url)
 		}
 	}
-	return targetURL
-}
-
-func (s SiestaPage) Open(task yaml.Task) error {
-	url := joinPath(s.conf.URL, task.Target)
 	if err := s.Page.Navigate(url); err != nil {
 		err = errors.Wrap(err, "Failed to navigate")
 		return err
@@ -38,11 +34,6 @@ func (s SiestaPage) Open(task yaml.Task) error {
 }
 
 func (s SiestaPage) SetWindowSize(task yaml.Task) error {
-	url := joinPath(s.conf.URL, task.Target)
-
-	if err := s.Page.Navigate(url); err != nil {
-		return errors.Wrap(err, "Failed to navigate")
-	}
 	arr := regexp.MustCompile("x").Split(task.Target, -1)
 	if len(arr) != 2 {
 		err := fmt.Errorf("Uncompatible array length: expected 2 actual %d", len(arr))
