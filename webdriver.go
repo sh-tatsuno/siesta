@@ -17,12 +17,18 @@ type SiestaPage struct {
 	conf yaml.Yaml
 }
 
-func (s SiestaPage) Open(task yaml.Task) error {
-	url := task.Target
-	if url[:4] != "http" {
-		url = path.Join(s.conf.URL, url)
+func joinPath(confURL string, targetURL string) string {
+	// check base url & join if target means path
+	if len(confURL) > 0 && len(targetURL) > 0 {
+		if string([]rune(targetURL)[0]) == "/" {
+			targetURL = path.Join(confURL, targetURL)
+		}
 	}
+	return targetURL
+}
 
+func (s SiestaPage) Open(task yaml.Task) error {
+	url := joinPath(s.conf.URL, task.Target)
 	if err := s.Page.Navigate(url); err != nil {
 		err = errors.Wrap(err, "Failed to navigate")
 		return err
@@ -32,10 +38,7 @@ func (s SiestaPage) Open(task yaml.Task) error {
 }
 
 func (s SiestaPage) SetWindowSize(task yaml.Task) error {
-	url := task.Target
-	if url[:4] != "http" {
-		url = path.Join(s.conf.URL, url)
-	}
+	url := joinPath(s.conf.URL, task.Target)
 
 	if err := s.Page.Navigate(url); err != nil {
 		return errors.Wrap(err, "Failed to navigate")
