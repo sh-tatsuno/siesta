@@ -15,14 +15,30 @@ func ConvertSideToYaml(s *side.Side) *yaml.Yaml {
 			Tasks: []yaml.Task{},
 		}
 		cmds := t.Commands
+		var task yaml.Task
 		for _, c := range cmds {
-			task := yaml.Task{
-				Description: c.Comment,
-				Command:     c.Command,
-				Target:      c.Target,
-				Value:       c.Value,
+			ts := c.Targets
+			if len(ts) < 2 {
+				task = yaml.Task{
+					Name:    c.Comment,
+					Command: c.Command,
+					Target:  c.Target,
+					Value:   c.Value,
+				}
+			} else {
+				var targets []string
+				for _, target := range ts {
+					if len(target) > 1 {
+						targets = append(targets, target[0])
+					}
+				}
+				task = yaml.Task{
+					Name:    c.Comment,
+					Command: c.Command,
+					Targets: targets,
+					Value:   c.Value,
+				}
 			}
-			// TODO: jump if runscript
 			test.Tasks = append(test.Tasks, task)
 		}
 		tests = append(tests, test)

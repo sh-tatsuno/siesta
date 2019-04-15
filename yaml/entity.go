@@ -21,10 +21,11 @@ type Test struct {
 }
 
 type Task struct {
-	Description string `yaml:"description"`
-	Command     string `yaml:"command"`
-	Target      string `yaml:"target"`
-	Value       string `yaml:"value"`
+	Name    string   `yaml:"name"`
+	Command string   `yaml:"command"`
+	Target  string   `yaml:"target,omitempty"`
+	Targets []string `yaml:"targets,omitempty"`
+	Value   string   `yaml:"value"`
 }
 
 func (y Yaml) Save(filePath string) error {

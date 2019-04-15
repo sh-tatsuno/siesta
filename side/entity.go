@@ -3,6 +3,7 @@ package side
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 
 	"github.com/pkg/errors"
 )
@@ -53,4 +54,17 @@ func (s Side) Save(filePath string) error {
 		return err
 	}
 	return nil
+}
+
+func Load(filePath string) *Side {
+	bytes, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// decode json
+	side := new(Side)
+	if err := json.Unmarshal(bytes, &side); err != nil {
+		log.Fatal(err)
+	}
+	return side
 }
