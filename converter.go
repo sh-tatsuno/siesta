@@ -54,7 +54,3 @@ func ConvertSideToYaml(s *side.Side) *yaml.Yaml {
 
 	return y
 }
-
-// TODO:
-//func ConvertYamlToSide(ys []*yaml.Yaml) *side.Side {
-//}

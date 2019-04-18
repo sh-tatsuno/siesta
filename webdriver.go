@@ -1,80 +1,50 @@
 package siesta
 
 import (
+	"log"
+
 	"github.com/sclevine/agouti"
 	"github.com/sh-tatsuno/siesta/yaml"
 )
 
 type SiestaPage struct {
 	Page *agouti.Page
-	conf yaml.Yaml
+	conf *yaml.Yaml
 }
 
-func (s SiestaPage) Commander(task yaml.Task) error {
-	switch task.Command {
-	case "open":
-		s.Open(task)
-	case "setWindowSize":
-		s.SetWindowSize(task)
-	case "click":
-		s.Click(task)
-	case "type":
-		s.Type(task)
-	case "mouseOver":
-		s.MouseOver(task)
-	case "sendKeys":
-		s.SendKeys(task)
-	case "mouseOut":
-		s.MouseOut(task)
-	case "pause":
-		s.Pause(task)
-	case "selectWindow":
-		s.SelectWindow(task)
-	case "runScript":
-		s.RunScript(task)
-		//default:
-		//return errors.New("no match command")
+func (s *SiestaPage) Run() error {
+	var err error
+	for _, test := range s.conf.Tests {
+		for _, task := range test.Tasks {
+			err = s.Commander(task)
+		}
 	}
-	return nil
+	return err
 }
 
-/* TODO */
-// runscript
+func CreateSiesta(y *yaml.Yaml) SiestaPage {
+	options := []string{"--headless"}
+	driver := agouti.ChromeDriver(agouti.ChromeOptions("args", options))
 
-/* capture screenshot*/
-// runscript
-// window.captureEntirePageScreenshot
-//
+	if err := driver.Start(); err != nil {
+		log.Fatalf("Failed to start driver:%v", err)
+	}
 
-// "id": "52554b60-15b4-42ec-b939-e4236039fcd7",
-// "comment": "",
-// "command": "type",
-// "target": "name=q",
-// "targets": [
-//   ["name=q", "name"],
-//   ["css=.gLFyf", "css:finder"],
-//   ["xpath=//input[@name='q']", "xpath:attributes"],
-//   ["xpath=//form[@id='tsf']/div[2]/div/div/div/div/input", "xpath:idRelative"],
-//   ["xpath=//div/div/input", "xpath:position"]
-// ],
-// "value": "hello"
-// }, {
-// "id": "ab952c1a-541d-4105-b5c6-0f1945456b75",
-// "comment": "",
-// "command": "sendKeys",
-// "target": "name=q",
-// "targets": [
-//   ["name=q", "name"],
-//   ["css=.gLFyf", "css:finder"],
-//   ["xpath=//input[@name='q']", "xpath:attributes"],
-//   ["xpath=//form[@id='tsf']/div[2]/div/div/div/div/input", "xpath:idRelative"],
-//   ["xpath=//div/div/input", "xpath:position"]
-// ],
-// "value": "${KEY_ENTER}"
-// }, {
-// "id": "227807fc-2ddf-4724-8541-bf202f3ea595",
-// "comment": "",
-// "command": "pause",
-// "target": "5000",
-// "targets": [],
-// "value": ""
+	page, err := driver.NewPage(agouti.Browser("chrome"))
+	if err != nil {
+		log.Fatalf("Failed to open page:%v", err)
+	}
+
+	s := SiestaPage{
+		Page: page,
+		conf: y,
+	}
+
+	return s
+}
+
+// TODO:
+// side読み込んでyaml保存
+// yaml読み込んでside保存
+
+// yaml読み込んで実行
